@@ -1,3 +1,4 @@
+import { response } from "express";
 import role from "../models/role.js";
 
 //aqui necesita recibir y responder informacion req, res
@@ -14,6 +15,7 @@ const registerRole = async (req, res) => {
   //validar que no exista un role-> findOne es el primero que exista
   //va a revisar name
   // con await para esperar respuesta del procesos
+  //role.findone = el primero que encuentre
   const existingRole = await role.findOne({ name: req.body.name });
   if (existingRole) return res.status(400).send("The role already existing");
 
@@ -33,5 +35,18 @@ const registerRole = async (req, res) => {
   return res.status(200).send({ result });
 };
 
-//exportar toda la funcion
-export default { registerRole };
+//consultar roles
+const listRole = async (req, res) => {
+  //role.find = trae todo
+  const roleSchema = await role.find();
+  // este if primero se ejecuta el else
+  if (!roleSchema || roleSchema.length == 0)
+    //los mensajes de errros se pueden enviar como JSON ({ Error:"Empty role list"})
+    return response.status(400).send({ Error:"Empty role list"});
+  return res.status(200).send({ roleSchema });
+  //operador ternario es igual al if anterior
+  // return !roleSchema || roleSchema.length == 0 ? response.status(400).send("Empty role list") : res.status(200).send({ roleSchema });
+};
+//exportar todas las funciones
+export default { registerRole, listRole };
+
