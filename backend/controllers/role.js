@@ -42,11 +42,50 @@ const listRole = async (req, res) => {
   // este if primero se ejecuta el else
   if (!roleSchema || roleSchema.length == 0)
     //los mensajes de errros se pueden enviar como JSON ({ Error:"Empty role list"})
-    return response.status(400).send({ Error:"Empty role list"});
+    return response.status(400).send({ Error: "Empty role list" });
   return res.status(200).send({ roleSchema });
   //operador ternario es igual al if anterior
   // return !roleSchema || roleSchema.length == 0 ? response.status(400).send("Empty role list") : res.status(200).send({ roleSchema });
 };
-//exportar todas las funciones
-export default { registerRole, listRole };
 
+//editar por id
+const updateRole = async (req, res) => {
+  if (!req.body.name || !req.body.description)
+    return res.status(400).send("Incomplete data");
+
+  //deja editar si uno cambia y el otro no (la , haria como un Y)
+  const existingRole = await role.findOne({
+    name: req.body.name,
+    description: req.body.description,
+  });
+  if (existingRole) return res.status(400).send("The role already existing");
+
+  const roleUpdate = await role.findByIdAndUpdate(req.body._id, {
+    //aqui pone los nuevos datos
+    name: req.body.name,
+    description: req.body.description,
+  });
+  return !roleUpdate
+    ? res.status(400).send("Error editing role")
+    : res.status(200).send({ roleUpdate });
+};
+
+//eliminar role
+const deleteRole = async (req, res) => {
+  const roleDelete = await role.findByIdAndDelete({ _id: req.params["_id"] });
+  return !roleDelete
+    ? res.status(400).send("Role no found")
+    : res.status(200).send("Role deleted");
+};
+
+//Bucar por id (Cuando se hace login para saber que role tiene el usuario)
+//parametros para buscar internamente
+//login JWT{7037815ca481f}
+const findRole = async (req, res) => {
+  const roleId = await role.findById({ _id: req.params["_id"] });
+  return !roleId
+    ? res.status(400).send("No search results")
+    : res.status(200).send({ roleId });
+};
+//exportar todas las funciones
+export default { registerRole, listRole, updateRole, deleteRole, findRole };
